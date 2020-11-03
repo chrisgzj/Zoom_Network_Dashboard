@@ -111,9 +111,23 @@ def extraer_fallas():
     with open('Datos/fallas_oct.json', 'w') as outfile:
         json.dump(fallas, outfile)
 
+def dicc_uuid():
+    with open('Datos/reunionesclase_oct.json', 'r') as infile:
+        reuniones = json.load(infile)
+    uuids = {}
+    for reu in reuniones:
+        uuids[reu['uuid']] = reu['id']
+    print (uuids)
+    print (len(uuids))
+    with open('Datos/uuids_oct.json', 'w') as outfile:
+        json.dump(uuids, outfile)
+
+
 def analizar_fallas():
     with open('Datos/fallas_oct.json', 'r') as infile:
         fallas = json.load(infile)
+    with open('Datos/uuids_oct.json', 'r') as infile:
+        uuids = json.load(infile)
     fallas_grupales = {}
     for falla in fallas:
         id = (falla['meeting_uuid'], falla['leave_time'])
@@ -123,9 +137,11 @@ def analizar_fallas():
             fallas_grupales[id] = 1
     # print(fallas_grupales)
     print(sorted(fallas_grupales.values()))
+    [print(ejem, uuids[ejem[0]], fallas_grupales[ejem]) for ejem in fallas_grupales if fallas_grupales[ejem] >= 10]
 
 
 
 
+# dicc_uuid()
 analizar_fallas()
 # bajar_participantes()
