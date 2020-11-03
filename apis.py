@@ -75,7 +75,7 @@ def bajar_participantes():
         time.sleep(1)
 
 def extraer_fallas():
-    with open('participantes_oct.json', 'r') as infile:
+    with open('Datos/participantes_oct.json', 'r') as infile:
         participantes = json.load(infile)
     individuales = []
     [[individuales.append(part) for part in ls] for ls in participantes.values()]
@@ -108,13 +108,24 @@ def extraer_fallas():
     #     json.dump(particip1, outfile)
     print(len(fallas))
     print(fallas[0])
+    with open('Datos/fallas_oct.json', 'w') as outfile:
+        json.dump(fallas, outfile)
+
+def analizar_fallas():
+    with open('Datos/fallas_oct.json', 'r') as infile:
+        fallas = json.load(infile)
+    fallas_grupales = {}
+    for falla in fallas:
+        id = (falla['meeting_uuid'], falla['leave_time'])
+        if id in fallas_grupales:
+            fallas_grupales[id] += 1
+        else:
+            fallas_grupales[id] = 1
+    # print(fallas_grupales)
+    print(sorted(fallas_grupales.values()))
 
 
 
 
-# participantes = datos["participants"]
-# for part in participantes:
-#     print(part['leave_reason'])
-
-extraer_fallas()
+analizar_fallas()
 # bajar_participantes()
