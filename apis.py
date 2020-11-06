@@ -1,6 +1,5 @@
 import http.client
-import json
-import time
+import json, csv, time
 from urllib.parse import quote
 
 conn = http.client.HTTPSConnection("api.zoom.us")
@@ -139,9 +138,54 @@ def analizar_fallas():
     print(sorted(fallas_grupales.values()))
     [print(ejem, uuids[ejem[0]], fallas_grupales[ejem]) for ejem in fallas_grupales if fallas_grupales[ejem] >= 10]
 
+def analizar_otros():
+    with open('Datos/fallas_oct.json', 'r') as infile:
+        fallas = json.load(infile)
+    with open('Datos/uuids_oct.json', 'r') as infile:
+        uuids = json.load(infile)
+    dato_interes = {}
+    dato_interes['sin_dato'] = 0
+    for falla in fallas:
+        dato = 'pc_name'
+        try:
+            if falla[dato] in dato_interes:
+                dato_interes[falla[dato]] += 1
+            else:
+                dato_interes[falla[dato]] = 1
+        except:
+            dato_interes['sin_dato'] += 1
+    print(dato_interes)
+    print(sorted(dato_interes.values()))
+    [print(ejem, dato_interes[ejem]) for ejem in dato_interes if dato_interes[ejem] >= 100]
+
+def exportar_individuales():
+    with open('Datos/fallas_oct.json', 'r') as infile:
+        fallas = json.load(infile)
+    with open('Datos/uuids_oct.json', 'r') as infile:
+        uuids = json.load(infile)
+    with open('Datos/clases.json', 'r') as infile:
+        clases = json.load(infile)
+    with open('Datos/secciones.json', 'r') as infile:
+        secciones = json.load(infile)
+    print(len(fallas))
+    encabezado = ['fecha','uuid','id','clase','seccion','mail','IP','device','network_type','data_center','user_name']
+    with open('Datos/fallas_ind_oct.csv', mode='w') as outfile:
+        writer = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(encabezado)
+        for falla in fallas:
+            uuid = falla['meeting_uuid']
+            id = str(uuids[uuid])
+            if 'email' in falla:
+                email = falla['email']
+            else:
+                email = ""
+            fila = [falla['leave_time'][:10], uuid, id, clases[id], secciones[id], email, falla['ip_address'], falla['device'], falla['network_type'], falla['data_center'], falla['user_name']]
+            writer.writerow(fila)
+            # print(fila)
 
 
 
-# dicc_uuid()
-analizar_fallas()
-# bajar_participantes()
+
+
+
+exportar_individuales()
