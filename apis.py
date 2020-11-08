@@ -121,7 +121,6 @@ def dicc_uuid():
     with open('Datos/uuids_oct.json', 'w') as outfile:
         json.dump(uuids, outfile)
 
-
 def analizar_fallas():
     with open('Datos/fallas_oct.json', 'r') as infile:
         fallas = json.load(infile)
@@ -135,7 +134,7 @@ def analizar_fallas():
         else:
             fallas_grupales[id] = 1
     # print(fallas_grupales)
-    print(sorted(fallas_grupales.values()))
+    print(len(fallas_grupales.values()))
     [print(ejem, uuids[ejem[0]], fallas_grupales[ejem]) for ejem in fallas_grupales if fallas_grupales[ejem] >= 10]
 
 def analizar_otros():
@@ -181,11 +180,41 @@ def exportar_individuales():
                 email = ""
             fila = [falla['leave_time'][:10], uuid, id, clases[id], secciones[id], email, falla['ip_address'], falla['device'], falla['network_type'], falla['data_center'], falla['user_name']]
             writer.writerow(fila)
-            # print(fila)
+            # print(fila),
+
+def exportar_grupales():
+    with open('Datos/fallas_oct.json', 'r') as infile:
+        fallas = json.load(infile)
+    with open('Datos/uuids_oct.json', 'r') as infile:
+        uuids = json.load(infile)
+    with open('Datos/clases.json', 'r') as infile:
+        clases = json.load(infile)
+    with open('Datos/secciones.json', 'r') as infile:
+        secciones = json.load(infile)
+    fallas_grupales = {}
+    for falla in fallas:
+        id = (falla['meeting_uuid'], falla['leave_time'])
+        if id in fallas_grupales:
+            fallas_grupales[id] += 1
+        else:
+            fallas_grupales[id] = 1
+    print(len(fallas_grupales))
+    encabezado = ['fecha', 'hora', 'uuid', 'id', 'clase', 'seccion', 'num_desconect']
+    conteo = 0
+    suma = 0
+    with open('Datos/fallas_grup_oct.csv', mode='w') as outfile:
+        writer = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(encabezado)
+        for falla in fallas_grupales:
+            if fallas_grupales[falla] >= 3:
+                conteo += 1
+                suma += fallas_grupales[falla]
+                id = str(uuids[falla[0]])
+                fila = [falla[1][:10], falla[1][11:19], falla[0], id, clases[id], secciones[id], fallas_grupales[falla]]
+                writer.writerow(fila)
+    print(conteo)
+    print(suma)
 
 
 
-
-
-
-exportar_individuales()
+exportar_grupales()
