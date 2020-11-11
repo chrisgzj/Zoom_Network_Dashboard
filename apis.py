@@ -1,15 +1,17 @@
 import http.client
 import json, csv, time
 from urllib.parse import quote
+from Datos.credentials import get_token
 
+sec_token = get_token()
 conn = http.client.HTTPSConnection("api.zoom.us")
 headers = {
-    'authorization': "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOm51bGwsImlzcyI6IjZjcVczdTJpUXBTd2loUkdVYkoxMGciLCJleHAiOjE2MDkzOTQ0MDAsImlhdCI6MTYwNDE5NjM0Nn0.Hh5PqTPXuPFGgtomj97tvNT85udw_IvexQQTGpMCu2c",
+    'authorization': "Bearer " + sec_token,
     'content-type': "application/json"
     }
 
-def bajar_reuniones():
-    link_basic = "/v2/metrics/meetings?type=past&from=2020-10-01&to=2020-10-31&page_size=300"
+def download_meeting_info():
+    link_basic = "/v2/metrics/meetings?type=past&from=2020-11-01&to=2020-11-11&page_size=300"
     reuniones = []
     next_page = ''
     contador = 0
@@ -26,10 +28,10 @@ def bajar_reuniones():
         contador += 1
         print(contador)
         time.sleep(2)
-    with open('reuniones_oct.json', 'w') as outfile:
+    with open('Datos/reuniones_nov.json', 'w') as outfile:
         json.dump(reuniones, outfile)
 
-def filtrar_reuniones():
+def filter_meetings():
     with open('reuniones_oct.json', 'r') as infile:
         reuniones = json.load(infile)
     with open('ids_clases.json', 'r') as infile:
@@ -40,7 +42,7 @@ def filtrar_reuniones():
     with open('reunionesclase_oct.json', 'w') as outfile:
         json.dump(reuniones_clase, outfile)
 
-def bajar_participantes():
+def download_participant_info():
     with open('reunionesclase_oct.json', 'r') as infile:
         reuniones = json.load(infile)
 
@@ -73,7 +75,7 @@ def bajar_participantes():
             json.dump(participantes, outfile)
         time.sleep(1)
 
-def extraer_fallas():
+def extract_failures():
     with open('Datos/participantes_oct.json', 'r') as infile:
         participantes = json.load(infile)
     individuales = []
@@ -121,7 +123,7 @@ def dicc_uuid():
     with open('Datos/uuids_oct.json', 'w') as outfile:
         json.dump(uuids, outfile)
 
-def analizar_fallas():
+def analyze_failures():
     with open('Datos/fallas_oct.json', 'r') as infile:
         fallas = json.load(infile)
     with open('Datos/uuids_oct.json', 'r') as infile:
@@ -137,7 +139,7 @@ def analizar_fallas():
     print(len(fallas_grupales.values()))
     [print(ejem, uuids[ejem[0]], fallas_grupales[ejem]) for ejem in fallas_grupales if fallas_grupales[ejem] >= 10]
 
-def analizar_otros():
+def analyze_others():
     with open('Datos/fallas_oct.json', 'r') as infile:
         fallas = json.load(infile)
     with open('Datos/uuids_oct.json', 'r') as infile:
@@ -157,7 +159,7 @@ def analizar_otros():
     print(sorted(dato_interes.values()))
     [print(ejem, dato_interes[ejem]) for ejem in dato_interes if dato_interes[ejem] >= 100]
 
-def exportar_individuales():
+def export_individual_failures():
     with open('Datos/fallas_oct.json', 'r') as infile:
         fallas = json.load(infile)
     with open('Datos/uuids_oct.json', 'r') as infile:
@@ -182,7 +184,7 @@ def exportar_individuales():
             writer.writerow(fila)
             # print(fila),
 
-def exportar_grupales():
+def export_group_failures():
     with open('Datos/fallas_oct.json', 'r') as infile:
         fallas = json.load(infile)
     with open('Datos/uuids_oct.json', 'r') as infile:
@@ -215,6 +217,4 @@ def exportar_grupales():
     print(conteo)
     print(suma)
 
-
-
-exportar_grupales()
+download_meeting_info()
